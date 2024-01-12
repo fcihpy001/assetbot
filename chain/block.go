@@ -98,6 +98,7 @@ func getBlockInfo(blockNumber int64) {
 				From:        from.Hex(),
 				To:          tx.To().Hex(),
 				ETHAmount:   tx.Value().String(),
+				BlockTime:   utils.BlockTime(block.Time()),
 				Status:      uint(receipt.Status),
 			}
 			err := service.GetDB().Create(&trade).Error

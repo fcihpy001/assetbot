@@ -1,7 +1,7 @@
 
 .PHONY: linux
 linux:
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ./build/managerApi ../main.go
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ./build/assetBot ../main.go
 
 .PHONY: mac
 mac:
@@ -10,7 +10,7 @@ mac:
 # 编译到 windows
 .PHONY: windows
 windows:
-	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o ./build/api.exe main.go
+	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o ./build/assetBot.exe main.go
 
 .PHONY: clean
 clean:
