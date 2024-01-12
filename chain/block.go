@@ -9,16 +9,20 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"log"
 	"math/big"
+	"os"
+	"strconv"
 	"time"
 )
 
 var (
-	startBlock int64 = 10309326
+	startBlock int64 = 0
 	isRunning  bool  = false
 	blockTime  string
 )
 
-func Task() {
+func ScanChaiTask() {
+	start, _ := strconv.Atoi(os.Getenv("STARTBLOCK"))
+	startBlock = int64(start)
 	ticker := time.NewTicker(10 * time.Second)
 	go func() {
 		for {
@@ -31,6 +35,7 @@ func Task() {
 	<-make(chan interface{})
 }
 
+// 扫链方式
 func ScanBlock() {
 	if isRunning {
 		return
@@ -45,17 +50,17 @@ func ScanBlock() {
 	}
 	log.Println("获取最新高度:", header.Number.Int64())
 
-	startBlock = int64(10309326)
 	log.Println("开始执行扫描程序...", startBlock)
-	//for i := startBlock; i <= header.Number.Int64(); i++ {
-	//	getBlockInfo(i)
-	//}
-	blocks := [...]int64{
-		10309326, 10309263,
-	}
-	for _, i := range blocks {
+	for i := startBlock; i <= header.Number.Int64(); i++ {
 		getBlockInfo(i)
 	}
+	//从固定列的block list中查询
+	//blocks := [...]int64{
+	//	10309326, 10309263,
+	//}
+	//for _, i := range blocks {
+	//	getBlockInfo(i)
+	//}
 	isRunning = false
 }
 
@@ -90,6 +95,7 @@ func getBlockInfo(blockNumber int64) {
 
 }
 
+//监听方式
 //func Subscriber() {
 //	contractAddress := common.HexToAddress("0x1643E812aE58766192Cf7D2Cf9567dF2C37e9B7F")
 //	query := ethereum.FilterQuery{
