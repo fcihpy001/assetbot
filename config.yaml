@@ -6,10 +6,11 @@ datasource:
   driverName: mysql
   host: 127.0.0.1
   port: 3306
-  database: bot
+  database: xpet
   username: root
   password: root1234
   charset: utf8mb4
   loc: Local
 debug: true
-rpc: https://goerli.infura.io/v3/506b1f3e9b674e75b10b2f7b16bc5e44
+#rpc: https://goerli.infura.io/v3/506b1f3e9b674e75b10b2f7b16bc5e44
+rpc: https://mainnet.infura.io/v3/506b1f3e9b674e75b10b2f7b16bc5e44

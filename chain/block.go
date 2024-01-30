@@ -1,8 +1,6 @@
 package chain
 
 import (
-	"AssetBot/model"
-	"AssetBot/service"
 	"AssetBot/utils"
 	"context"
 	"fmt"
@@ -35,6 +33,8 @@ func ScanChaiTask() {
 	<-make(chan interface{})
 }
 
+// 0xc9fd9196a7612fA09309c624e272DbcF310881Ac
+// 0xE813FCE98F43abC18Dc4befFeACa2d8B7c47521c
 // 扫链方式
 func ScanBlock() {
 	if isRunning {
@@ -52,7 +52,7 @@ func ScanBlock() {
 
 	log.Println("开始执行扫描程序...", startBlock)
 	for i := startBlock; i <= header.Number.Int64(); i++ {
-		getBlockInfo(i)
+		GetBlockInfo(i)
 	}
 	//从固定列的block list中查询
 	//blocks := [...]int64{
@@ -64,7 +64,7 @@ func ScanBlock() {
 	isRunning = false
 }
 
-func getBlockInfo(blockNumber int64) {
+func GetBlockInfo(blockNumber int64) {
 	block, err := utils.GetEthClient().BlockByNumber(context.Background(), big.NewInt(blockNumber))
 	if err != nil {
 		log.Println("获取区块信息出错:", err)
@@ -75,24 +75,49 @@ func getBlockInfo(blockNumber int64) {
 
 	chainID, err := utils.GetEthClient().NetworkID(context.Background())
 
-	for _, tx := range block.Transactions() {
+	for i, tx := range block.Transactions() {
 		receipt, _ := utils.GetEthClient().TransactionReceipt(context.Background(), tx.Hash())
-
+		//fmt.Println("status:", receipt.Status, "hash:", tx.Hash().Hex(), "-index", i)
 		//保存交易的发送方地址
-		if from, err := types.Sender(types.NewLondonSigner(chainID), tx); err == nil {
-			fmt.Println("from-", from.Hex())
-			trade := model.Trade{
-				TxHash:      tx.Hash().Hex(),
-				BlockNumber: blockNumber,
-				From:        from.Hex(),
-				To:          tx.To().Hex(),
-				ETHAmount:   tx.Value().String(),
-				Status:      receipt.Status,
+		from, err := types.Sender(types.NewLondonSigner(chainID), tx)
+		//err == nil {
+		//fmt.Println("from:", from, "to:", tx.To().Hex())
+		//if tx.To().Hex() == "0x00000000000000000000000000000000000FacE7" {
+		//fmt.Println("eths", utils.Wei2ether(tx.Value()))
+		//fmt.Println("from-", from.Hex())
+		//fmt.Println("hash", tx.Hash())
+		//trade := model.ChainTrade{
+		//	TxHash:      tx.Hash().Hex(),
+		//	BlockNumber: blockNumber,
+		//	From:        from.Hex(),
+		//	To:          tx.To().Hex(),
+		//	ETHAmount:   tx.Value().String(),
+		//	Status:      receipt.Status,
+		//	Eth:         utils.Wei2ether(tx.Value()),
+		//	BlockTime:   blockTime,
+		//}
+
+		//if err := service.GetDB().Create(&trade).Error; err != nil {
+		//	fmt.Println("入库失败", err)
+		//}
+		//	fmt.Println("插入记录成功:daddd")
+		//}
+		if err != nil {
+			fmt.Println("errorwfqf:", err)
+		} else {
+			//fmt.Println("from:", from, "to:", tx.To().Hex())
+			if from.Hex() == "0xE813FCE98F43abC18Dc4befFeACa2d8B7c47521c" && tx.To().Hex() == "0x00000000000000000000000000000000000FacE7" {
+
+				fmt.Println("hash", tx.Hash().Hex())
+				fmt.Println("face token", i)
+				fmt.Println("recie", receipt.Status)
+				//== "0x00000000000000000000000000000000000FacE7" &&
+				fmt.Println("to", tx.To().Hex(), "from-", from.Hex())
 			}
-			service.GetDB().Save(trade)
+
 		}
 	}
-
+	fmt.Println("本block扫描完成")
 }
 
 //监听方式

@@ -17,7 +17,7 @@ var (
 )
 
 func createTable(db *gorm.DB) {
-	if err := db.AutoMigrate(&model.Trade{}); err != nil {
+	if err := db.AutoMigrate(&model.ChainTrade{}, &model.FoodTrade{}); err != nil {
 		log.Printf("建表时出现异常", err)
 	}
 
