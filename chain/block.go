@@ -7,8 +7,6 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"log"
 	"math/big"
-	"os"
-	"strconv"
 	"time"
 )
 
@@ -19,8 +17,11 @@ var (
 )
 
 func ScanChaiTask() {
-	start, _ := strconv.Atoi(os.Getenv("STARTBLOCK"))
-	startBlock = int64(start)
+	//从数据库中读取区块号
+	var block model.BlockInfo
+	service.GetDB().First(&block)
+	startBlock = int64(block.BlockNumber)
+
 	ticker := time.NewTicker(10 * time.Second)
 	go func() {
 		for {
@@ -49,18 +50,33 @@ func ScanBlock() {
 		return
 	}
 	log.Println("获取最新高度:", header.Number.Int64())
+	if startBlock == 0 {
+		startBlock = header.Number.Int64()
+	}
 
 	log.Println("开始执行扫描程序...", startBlock)
+<<<<<<< HEAD
 	for i := startBlock; i <= header.Number.Int64(); i++ {
 		GetBlockInfo(i)
+=======
+	for i := startBlock; i <= startBlock+2; i++ {
+		getBlockInfo(i)
+>>>>>>> 5070448225c8f1a4a8f6811a48979cfd748c8cf1
 	}
-	//从固定列的block list中查询
-	//blocks := [...]int64{
-	//	10309326, 10309263,
-	//}
-	//for _, i := range blocks {
-	//	getBlockInfo(i)
-	//}
+
+	//将当前区块高度写入文件
+	var block model.BlockInfo
+	service.GetDB().First(&block)
+	if block.ID != 0 {
+		result := service.GetDB().Model(&model.BlockInfo{}).Where("block_number", startBlock).Update("block_number", header.Number.Int64())
+		if result.Error != nil {
+			fmt.Println("写入失败", result)
+		}
+	} else {
+		block.BlockNumber = int(startBlock)
+		service.GetDB().Create(&block)
+	}
+
 	isRunning = false
 }
 
@@ -79,6 +95,7 @@ func GetBlockInfo(blockNumber int64) {
 		receipt, _ := utils.GetEthClient().TransactionReceipt(context.Background(), tx.Hash())
 		//fmt.Println("status:", receipt.Status, "hash:", tx.Hash().Hex(), "-index", i)
 		//保存交易的发送方地址
+<<<<<<< HEAD
 		from, err := types.Sender(types.NewLondonSigner(chainID), tx)
 		//err == nil {
 		//fmt.Println("from:", from, "to:", tx.To().Hex())
@@ -115,6 +132,23 @@ func GetBlockInfo(blockNumber int64) {
 				fmt.Println("to", tx.To().Hex(), "from-", from.Hex())
 			}
 
+=======
+		if from, err := types.Sender(types.NewLondonSigner(chainID), tx); err == nil {
+			fmt.Println("from-", from.Hex())
+			trade := model.Trade{
+				TxHash:      tx.Hash().Hex(),
+				BlockNumber: uint(blockNumber),
+				From:        from.Hex(),
+				To:          tx.To().Hex(),
+				ETHAmount:   tx.Value().String(),
+				BlockTime:   utils.BlockTime(block.Time()),
+				Status:      uint(receipt.Status),
+			}
+			err := service.GetDB().Create(&trade).Error
+			if err != nil {
+				println("入库失败:", err)
+			}
+>>>>>>> 5070448225c8f1a4a8f6811a48979cfd748c8cf1
 		}
 	}
 	fmt.Println("本block扫描完成")
